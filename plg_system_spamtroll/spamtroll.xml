@@ -11,6 +11,8 @@
     <description>PLG_SYSTEM_SPAMTROLL_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Plugin\System\Spamtroll</namespace>
 
+    <fieldsets addfieldprefix="Joomla\Plugin\System\Spamtroll\Field" />
+
     <files>
         <folder plugin="spamtroll">services</folder>
         <folder>src</folder>
@@ -39,8 +41,15 @@
     </update>
 
     <config>
-        <fields name="params">
+        <fields name="params"
+                addfieldprefix="Joomla\Plugin\System\Spamtroll\Field">
             <fieldset name="connection" label="PLG_SYSTEM_SPAMTROLL_FIELDSET_CONNECTION_LABEL">
+                <field
+                    name="quota_skipped_notice"
+                    type="quotaskipped"
+                    label=""
+                    description=""
+                />
                 <field
                     name="api_key"
                     type="password"
