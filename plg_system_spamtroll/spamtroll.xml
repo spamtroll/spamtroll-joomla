@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="plugin" group="system" method="upgrade">
+    <name>plg_system_spamtroll</name>
+    <author>Spamtroll</author>
+    <creationDate>2026-04-25</creationDate>
+    <copyright>Copyright (C) 2026 Spamtroll. All rights reserved.</copyright>
+    <license>GPL-2.0-or-later</license>
+    <authorEmail>support@spamtroll.io</authorEmail>
+    <authorUrl>https://spamtroll.io</authorUrl>
+    <version>0.1.0</version>
+    <description>PLG_SYSTEM_SPAMTROLL_XML_DESCRIPTION</description>
+    <namespace path="src">Joomla\Plugin\System\Spamtroll</namespace>
+
+    <files>
+        <folder plugin="spamtroll">services</folder>
+        <folder>src</folder>
+        <folder>sql</folder>
+    </files>
+
+    <languages>
+        <language tag="en-GB">language/en-GB/plg_system_spamtroll.ini</language>
+        <language tag="en-GB">language/en-GB/plg_system_spamtroll.sys.ini</language>
+    </languages>
+
+    <install>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/mysql/install.sql</file>
+        </sql>
+    </install>
+    <uninstall>
+        <sql>
+            <file driver="mysql" charset="utf8">sql/mysql/uninstall.sql</file>
+        </sql>
+    </uninstall>
+    <update>
+        <schemas>
+            <schemapath type="mysql">sql/mysql-updates</schemapath>
+        </schemas>
+    </update>
+
+    <config>
+        <fields name="params">
+            <fieldset name="connection" label="PLG_SYSTEM_SPAMTROLL_FIELDSET_CONNECTION_LABEL">
+                <field
+                    name="api_key"
+                    type="password"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_API_KEY_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_API_KEY_DESC"
+                    autocomplete="off"
+                    filter="raw"
+                    default=""
+                />
+                <field
+                    name="api_url"
+                    type="text"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_API_URL_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_API_URL_DESC"
+                    default="https://api.spamtroll.io/api/v1"
+                    filter="url"
+                />
+                <field
+                    name="timeout"
+                    type="number"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_TIMEOUT_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_TIMEOUT_DESC"
+                    default="5"
+                    min="1"
+                    max="30"
+                    step="1"
+                    filter="integer"
+                />
+            </fieldset>
+
+            <fieldset name="scoring" label="PLG_SYSTEM_SPAMTROLL_FIELDSET_SCORING_LABEL">
+                <field
+                    name="spam_threshold"
+                    type="number"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_SPAM_THRESHOLD_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_SPAM_THRESHOLD_DESC"
+                    default="0.70"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    filter="float"
+                />
+                <field
+                    name="suspicious_threshold"
+                    type="number"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_SUSPICIOUS_THRESHOLD_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_SUSPICIOUS_THRESHOLD_DESC"
+                    default="0.40"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    filter="float"
+                />
+                <field
+                    name="action_blocked"
+                    type="list"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_ACTION_BLOCKED_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_ACTION_BLOCKED_DESC"
+                    default="block"
+                >
+                    <option value="block">PLG_SYSTEM_SPAMTROLL_OPTION_ACTION_BLOCK</option>
+                    <option value="queue">PLG_SYSTEM_SPAMTROLL_OPTION_ACTION_QUEUE</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="events" label="PLG_SYSTEM_SPAMTROLL_FIELDSET_EVENTS_LABEL">
+                <field
+                    name="enable_user_check"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_ENABLE_USER_CHECK_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_ENABLE_USER_CHECK_DESC"
+                    default="1"
+                    filter="integer"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+                <field
+                    name="enable_content_check"
+                    type="radio"
+                    layout="joomla.form.field.radio.switcher"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_ENABLE_CONTENT_CHECK_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_ENABLE_CONTENT_CHECK_DESC"
+                    default="1"
+                    filter="integer"
+                >
+                    <option value="1">JYES</option>
+                    <option value="0">JNO</option>
+                </field>
+            </fieldset>
+
+            <fieldset name="logging" label="PLG_SYSTEM_SPAMTROLL_FIELDSET_LOGGING_LABEL">
+                <field
+                    name="log_retention_days"
+                    type="number"
+                    label="PLG_SYSTEM_SPAMTROLL_FIELD_LOG_RETENTION_DAYS_LABEL"
+                    description="PLG_SYSTEM_SPAMTROLL_FIELD_LOG_RETENTION_DAYS_DESC"
+                    default="30"
+                    min="0"
+                    max="3650"
+                    step="1"
+                    filter="integer"
+                />
+            </fieldset>
+        </fields>
+    </config>
+</extension>

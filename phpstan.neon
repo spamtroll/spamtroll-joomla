@@ -1,0 +1,10 @@
+parameters:
+    level: 6
+    paths:
+        - plg_system_spamtroll/src
+        - plg_system_spamtroll/services
+    bootstrapFiles:
+        - tests/stubs/joomla-stubs.php
+    excludePaths:
+        - plg_system_spamtroll/src/**/*.php.bak
+    treatPhpDocTypesAsCertain: false

@@ -1,0 +1,49 @@
+{
+    "name": "spamtroll/joomla",
+    "description": "Spamtroll Anti-Spam plugin for Joomla 4 and 5.",
+    "type": "joomla-plugin",
+    "license": "GPL-2.0-or-later",
+    "keywords": ["spamtroll", "spam", "anti-spam", "joomla", "joomla-plugin"],
+    "homepage": "https://spamtroll.io",
+    "support": {
+        "source": "https://github.com/spamtroll/spamtroll-joomla",
+        "issues": "https://github.com/spamtroll/spamtroll-joomla/issues"
+    },
+    "require": {
+        "php": ">=8.1",
+        "spamtroll/php-sdk": "^0.9"
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.11",
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Joomla\\Plugin\\System\\Spamtroll\\": "plg_system_spamtroll/src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Spamtroll\\Joomla\\Tests\\Unit\\": "tests/Unit/",
+            "Spamtroll\\Joomla\\Tests\\Integration\\": "tests/Integration/",
+            "Spamtroll\\Joomla\\Tests\\Support\\": "tests/Support/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.1"
+        },
+        "sort-packages": true
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=1G --no-progress",
+        "qa": [
+            "@stan",
+            "@test"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
