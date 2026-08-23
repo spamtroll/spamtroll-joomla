@@ -11,12 +11,29 @@
     <description>PLG_SYSTEM_SPAMTROLL_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Plugin\System\Spamtroll</namespace>
 
+    <!--
+        Read by Joomla's update pipeline (Updater/ConstraintChecker.php:106-109,
+        Updater/Adapter/ExtensionAdapter.php:116-124). Note that the *installer*
+        does not evaluate it — a fresh install on an older PHP is not blocked by
+        this tag. Kept in sync with composer.json's require.php.
+    -->
+    <php_minimum>8.2</php_minimum>
+
     <fieldsets addfieldprefix="Joomla\Plugin\System\Spamtroll\Field" />
 
+    <!--
+        `vendor` carries the Spamtroll PHP SDK, which services/provider.php
+        autoloads. Without it JoomlaHttpClient cannot even be class-loaded
+        (it implements an SDK interface) and the plugin takes down every
+        request. build/build-package.sh populates it and refuses to produce a
+        package if it is missing. The `plugin="..."` attribute only ever
+        applied to <filename>, never to <folder>, so it is dropped.
+    -->
     <files>
-        <folder plugin="spamtroll">services</folder>
+        <folder>services</folder>
         <folder>src</folder>
         <folder>sql</folder>
+        <folder>vendor</folder>
     </files>
 
     <languages>

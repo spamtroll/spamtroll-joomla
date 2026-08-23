@@ -17,6 +17,29 @@ use Joomla\Plugin\System\Spamtroll\Service\JoomlaHttpClient;
 use Joomla\Plugin\System\Spamtroll\Service\Logger;
 use Joomla\Plugin\System\Spamtroll\Service\Scanner;
 
+// The Spamtroll PHP SDK ships inside the installed package (see
+// build/build-package.sh). Joomla's autoloader only knows the plugin's own
+// namespace, so the SDK has to be registered here — before anything touches
+// JoomlaHttpClient, which `implements Spamtroll\Sdk\Http\HttpClientInterface`
+// and would otherwise fatal with "Interface not found" at class-load time.
+// This provider runs during application bootstrap for every request, front and
+// back end, so an uncaught error here takes the whole site down.
+if (!class_exists(\Spamtroll\Sdk\Client::class)) {
+    $spamtrollAutoload = __DIR__ . '/../vendor/autoload.php';
+
+    if (is_file($spamtrollAutoload)) {
+        try {
+            require_once $spamtrollAutoload;
+        } catch (\Throwable $spamtrollAutoloadError) {
+            // Composer's generated vendor/composer/platform_check.php throws
+            // when the host PHP is older than the packaged dependencies allow.
+            // Swallowing it costs us spam scanning; letting it escape costs the
+            // site every request.
+            error_log('Spamtroll: SDK autoload failed: ' . $spamtrollAutoloadError->getMessage());
+        }
+    }
+}
+
 return new class () implements ServiceProviderInterface {
     public function register(Container $container): void
     {
@@ -24,32 +47,73 @@ return new class () implements ServiceProviderInterface {
             PluginInterface::class,
             static function (Container $container): PluginInterface {
                 $config = (array) PluginHelper::getPlugin('system', 'spamtroll');
-                $params = isset($config['params']) ? $config['params'] : '';
-
-                $paramsArray = self::decodeParams($params);
-
-                $http = new JoomlaHttpClient();
-                $factory = new ClientFactory($http);
-
-                /** @var DatabaseInterface $db */
-                $db = $container->get(DatabaseInterface::class);
-                $logger = new Logger($db);
-
-                $scanner = new Scanner($factory, $logger, $paramsArray);
 
                 /** @var DispatcherInterface $dispatcher */
                 $dispatcher = $container->get(DispatcherInterface::class);
 
-                $plugin = new Spamtroll(
-                    $dispatcher,
-                    (array) $config
-                );
+                $plugin = new Spamtroll($dispatcher, $config);
                 $plugin->setApplication(Factory::getApplication());
-                $plugin->setScanner($scanner);
+                $plugin->setScanner(self::createScanner($container, $config));
 
                 return $plugin;
             }
         );
+    }
+
+    /**
+     * Returns null when the SDK is unavailable — a package built without
+     * `vendor/`, or a half-finished upgrade. The plugin then registers its
+     * listeners as usual and they no-op, which is the fail-open outcome the
+     * integration policy demands. Blowing up here would break every request.
+     *
+     * @param array<string, mixed> $config
+     */
+    private static function createScanner(Container $container, array $config): ?Scanner
+    {
+        if (!interface_exists(\Spamtroll\Sdk\Http\HttpClientInterface::class)) {
+            self::logMissingSdk();
+
+            return null;
+        }
+
+        try {
+            $paramsArray = self::decodeParams($config['params'] ?? '');
+
+            $http = new JoomlaHttpClient();
+            $factory = new ClientFactory($http);
+
+            /** @var DatabaseInterface $db */
+            $db = $container->get(DatabaseInterface::class);
+            $logger = new Logger($db);
+
+            return new Scanner($factory, $logger, $paramsArray);
+        } catch (\Throwable $e) {
+            self::logFailure($e);
+
+            return null;
+        }
+    }
+
+    private static function logMissingSdk(): void
+    {
+        self::log(
+            'Spamtroll PHP SDK not found — expected vendor/autoload.php in the plugin directory. '
+            . 'Scanning is disabled; all content is allowed through.'
+        );
+    }
+
+    private static function logFailure(\Throwable $e): void
+    {
+        self::log('Spamtroll scanner could not be built: ' . $e->getMessage());
+    }
+
+    private static function log(string $message): void
+    {
+        try {
+            \Joomla\CMS\Log\Log::add($message, \Joomla\CMS\Log\Log::WARNING, 'spamtroll');
+        } catch (\Throwable $e) {
+            error_log('Spamtroll: ' . $message);
+        }
     }
 
     /**

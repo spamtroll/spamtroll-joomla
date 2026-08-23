@@ -9,7 +9,7 @@ the API.
 ## Requirements
 
 - Joomla 4.0 or newer (tested against Joomla 4.4 and Joomla 5.x)
-- PHP 8.1 or newer
+- PHP 8.2 or newer
 - A Spamtroll API key (sign up at [spamtroll.io](https://spamtroll.io))
 
 ## Installation
@@ -29,12 +29,14 @@ the API.
 ```bash
 git clone https://github.com/spamtroll/spamtroll-joomla.git
 cd spamtroll-joomla
-composer install --no-dev
 bash build/build-package.sh
 ```
 
 The installable package is written to `dist/plg_system_spamtroll-<version>.zip` with the
-plugin manifest at the top level so Joomla's installer accepts it directly.
+plugin manifest at the top level so Joomla's installer accepts it directly. The script
+installs the Spamtroll PHP SDK into the archive's `vendor/` directory itself and refuses to
+emit a package without it — Joomla's autoloader only knows the plugin's own namespace, so a
+package missing the SDK cannot even class-load `JoomlaHttpClient`.
 
 ## Configuration
 
@@ -45,7 +47,7 @@ plugin manifest at the top level so Joomla's installer accepts it directly.
 | Timeout | HTTP timeout for the API call (seconds, default `5`). |
 | Spam threshold | Normalised score (0.0–1.0) above which content is treated as spam. Default `0.70`. |
 | Suspicious threshold | Score above which content is sent to moderation. Default `0.40`. |
-| Check user registrations | Toggle scanning of `onUserBeforeSave` and `onUserBeforeDataValidation`. |
+| Check user registrations | Toggle scanning of `onUserBeforeSave`, which covers every registration path. |
 | Check content | Toggle scanning of `onContentBeforeSave` (articles, contact, etc.). |
 | Action on blocked | Either `block` (reject the save) or `queue` (allow but mark as moderated). |
 | Log retention (days) | Older entries in `#__spamtroll_log` are pruned. `0` keeps everything. |

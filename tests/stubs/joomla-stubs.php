@@ -139,12 +139,27 @@ namespace Joomla\CMS {
             /** @var mixed */
             public static $application;
 
+            /** @var mixed */
+            public static $container;
+
             /**
              * @return mixed
              */
             public static function getApplication()
             {
                 return self::$application;
+            }
+
+            /**
+             * @return mixed
+             */
+            public static function getContainer()
+            {
+                if (self::$container === null) {
+                    throw new \RuntimeException('No container available in the test stubs.');
+                }
+
+                return self::$container;
             }
         }
     }
@@ -216,24 +231,6 @@ namespace Joomla\CMS\Http {
     }
 }
 
-namespace Joomla\Event {
-    if (!interface_exists(SubscriberInterface::class, false)) {
-        interface SubscriberInterface
-        {
-            /**
-             * @return array<string, string|array{0: string, 1: int}>
-             */
-            public static function getSubscribedEvents(): array;
-        }
-    }
-
-    if (!interface_exists(DispatcherInterface::class, false)) {
-        interface DispatcherInterface
-        {
-        }
-    }
-}
-
 namespace Joomla\DI {
     if (!interface_exists(ServiceProviderInterface::class, false)) {
         interface ServiceProviderInterface
@@ -280,6 +277,192 @@ namespace Joomla\Database {
             public function execute(): bool;
 
             public function getAffectedRows(): int;
+        }
+    }
+}
+
+namespace Joomla\CMS\Form {
+    if (!class_exists(FormField::class, false)) {
+        abstract class FormField
+        {
+            /** @var string */
+            protected $type = '';
+
+            /**
+             * @return string
+             */
+            abstract protected function getInput();
+        }
+    }
+}
+
+namespace Joomla\CMS\Form\Field {
+    use Joomla\CMS\Form\FormField;
+
+    if (!class_exists(NoteField::class, false)) {
+        class NoteField extends FormField
+        {
+            /** @var string */
+            protected $type = 'Note';
+
+            /**
+             * @return string
+             */
+            protected function getInput()
+            {
+                return '';
+            }
+
+            /**
+             * @return string
+             */
+            protected function getLabel()
+            {
+                return '';
+            }
+
+            /**
+             * @return string
+             */
+            protected function getTitle()
+            {
+                return '';
+            }
+        }
+    }
+}
+
+/*
+ * Faithful minimal reproductions of the Joomla CMS event hierarchy the plugin
+ * has to interoperate with. Verified against joomla-cms 5.3.0:
+ *
+ *   libraries/src/Event/AbstractEvent.php:39       extends Joomla\Event\Event
+ *   libraries/src/Event/AbstractImmutableEvent.php setArgument()/offsetSet() throw
+ *   libraries/src/Event/Result/ResultAware.php:65  writes $this->arguments directly,
+ *                                                  "to allow this to work on immutable events"
+ *   libraries/src/Event/Model/ModelEvent.php:24    extends AbstractImmutableEvent
+ *   libraries/src/Event/Model/BeforeSaveEvent.php:27  implements ResultAwareInterface
+ *   libraries/src/Event/User/BeforeSaveEvent.php:27   implements ResultAwareInterface
+ *
+ * The immutability matters: a listener that vetoes through
+ * setArgument('result', …) works on Joomla 4 and throws on Joomla 5.
+ */
+
+namespace Joomla\CMS\Event\Result {
+    if (!interface_exists(ResultAwareInterface::class, false)) {
+        interface ResultAwareInterface
+        {
+            /**
+             * @param mixed $data
+             */
+            public function addResult($data): void;
+        }
+    }
+
+    if (!trait_exists(ResultAware::class, false)) {
+        trait ResultAware
+        {
+            /**
+             * @param mixed $data
+             */
+            public function addResult($data): void
+            {
+                $this->arguments['result'] ??= [];
+                $this->arguments['result'][] = $data;
+            }
+        }
+    }
+}
+
+namespace Joomla\CMS\Event {
+    use Joomla\Event\Event as BaseEvent;
+
+    if (!class_exists(AbstractEvent::class, false)) {
+        abstract class AbstractEvent extends BaseEvent
+        {
+            /**
+             * Joomla 5 raises a deprecation for numeric argument names
+             * (libraries/src/Event/AbstractEvent.php:139-154). Reproduced here
+             * so a listener that probes positional indices on a Joomla 5 event
+             * is caught by the suite rather than by a customer's error log.
+             *
+             * @param string $name
+             * @param mixed  $default
+             *
+             * @return mixed
+             */
+            public function getArgument($name, $default = null)
+            {
+                if (is_numeric($name)) {
+                    trigger_error(
+                        sprintf('Numeric access to named event arguments is deprecated. Event %s argument %s', static::class, $name),
+                        E_USER_DEPRECATED
+                    );
+                }
+
+                return parent::getArgument($name, $default);
+            }
+        }
+    }
+
+    if (!class_exists(AbstractImmutableEvent::class, false)) {
+        abstract class AbstractImmutableEvent extends AbstractEvent
+        {
+            /**
+             * @param string $name
+             * @param mixed  $value
+             *
+             * @return $this
+             */
+            public function setArgument($name, $value)
+            {
+                throw new \BadMethodCallException(sprintf('Cannot modify an immutable event (%s).', static::class));
+            }
+
+            /**
+             * @param string $name
+             * @param mixed  $value
+             *
+             * @return void
+             */
+            public function offsetSet($name, $value): void
+            {
+                throw new \BadMethodCallException(sprintf('Cannot modify an immutable event (%s).', static::class));
+            }
+        }
+    }
+}
+
+namespace Joomla\CMS\Event\Model {
+    use Joomla\CMS\Event\AbstractImmutableEvent;
+    use Joomla\CMS\Event\Result\ResultAware;
+    use Joomla\CMS\Event\Result\ResultAwareInterface;
+
+    if (!class_exists(BeforeSaveEvent::class, false)) {
+        /**
+         * Mirrors `onContentBeforeSave` on Joomla 5: named arguments
+         * `context`, `subject`, `isNew`, `data`.
+         */
+        class BeforeSaveEvent extends AbstractImmutableEvent implements ResultAwareInterface
+        {
+            use ResultAware;
+        }
+    }
+}
+
+namespace Joomla\CMS\Event\User {
+    use Joomla\CMS\Event\AbstractImmutableEvent;
+    use Joomla\CMS\Event\Result\ResultAware;
+    use Joomla\CMS\Event\Result\ResultAwareInterface;
+
+    if (!class_exists(BeforeSaveEvent::class, false)) {
+        /**
+         * Mirrors `onUserBeforeSave` on Joomla 5: named arguments
+         * `subject`, `isNew`, `data`.
+         */
+        class BeforeSaveEvent extends AbstractImmutableEvent implements ResultAwareInterface
+        {
+            use ResultAware;
         }
     }
 }
