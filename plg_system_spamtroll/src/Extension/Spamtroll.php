@@ -9,6 +9,7 @@ use Joomla\CMS\Event\Result\ResultAwareInterface;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Language\Text;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Event\AbstractEvent;
 use Joomla\Event\Event;
 use Joomla\Event\EventInterface;
 use Joomla\Event\SubscriberInterface;
@@ -223,8 +224,14 @@ final class Spamtroll extends CMSPlugin implements SubscriberInterface
     }
 
     /**
-     * Reads a named event argument, falling back to the positional index used
-     * by Joomla 4's `triggerEvent()` payloads.
+     * Reads a named event argument, falling back to the positional index that
+     * Joomla 4's `EventAware::triggerEvent()` payloads use.
+     *
+     * The presence probe is not cosmetic: Joomla 5's
+     * `Joomla\CMS\Event\AbstractEvent::getArgument()` emits
+     * `E_USER_DEPRECATED` for a numeric argument name
+     * (`libraries/src/Event/AbstractEvent.php:139-154`), so the index must only
+     * ever be touched on events that really are positional.
      *
      * @param mixed $default
      *
@@ -232,15 +239,27 @@ final class Spamtroll extends CMSPlugin implements SubscriberInterface
      */
     private function eventArgument(EventInterface $event, string $name, int $index, $default)
     {
-        $value = $event->getArgument($name);
-
-        if ($value === null) {
-            // Cast for the string-typed docblock on EventInterface::getArgument();
-            // PHP resolves the numeric-string key back to the integer one.
-            $value = $event->getArgument((string) $index);
+        if ($this->hasArgument($event, $name)) {
+            return $event->getArgument($name) ?? $default;
         }
 
-        return $value ?? $default;
+        $positional = (string) $index;
+
+        if ($this->hasArgument($event, $positional)) {
+            // PHP resolves the numeric-string key back to the integer one.
+            return $event->getArgument($positional) ?? $default;
+        }
+
+        return $default;
+    }
+
+    private function hasArgument(EventInterface $event, string $name): bool
+    {
+        if ($event instanceof AbstractEvent) {
+            return $event->hasArgument($name);
+        }
+
+        return $event->getArgument($name) !== null;
     }
 
     private function enqueue(string $message, string $type): void

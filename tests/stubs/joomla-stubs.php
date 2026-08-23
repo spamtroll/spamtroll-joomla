@@ -380,6 +380,28 @@ namespace Joomla\CMS\Event {
     if (!class_exists(AbstractEvent::class, false)) {
         abstract class AbstractEvent extends BaseEvent
         {
+            /**
+             * Joomla 5 raises a deprecation for numeric argument names
+             * (libraries/src/Event/AbstractEvent.php:139-154). Reproduced here
+             * so a listener that probes positional indices on a Joomla 5 event
+             * is caught by the suite rather than by a customer's error log.
+             *
+             * @param string $name
+             * @param mixed  $default
+             *
+             * @return mixed
+             */
+            public function getArgument($name, $default = null)
+            {
+                if (is_numeric($name)) {
+                    trigger_error(
+                        sprintf('Numeric access to named event arguments is deprecated. Event %s argument %s', static::class, $name),
+                        E_USER_DEPRECATED
+                    );
+                }
+
+                return parent::getArgument($name, $default);
+            }
         }
     }
 

@@ -186,6 +186,46 @@ final class PluginDispatchTest extends TestCase
         $event->setArgument('result', [false]);
     }
 
+    /**
+     * The Joomla 4 fallback reads positional indices. Joomla 5's
+     * `AbstractEvent::getArgument()` raises `E_USER_DEPRECATED` for a numeric
+     * name (AbstractEvent.php:139-154), so the plugin must never reach for an
+     * index on an event that carries named arguments.
+     */
+    public function testJoomla5DispatchRaisesNoDeprecation(): void
+    {
+        $dispatcher = $this->dispatcherWith($this->spamScanner());
+
+        $deprecations = [];
+        set_error_handler(
+            static function (int $errno, string $message) use (&$deprecations): bool {
+                $deprecations[] = $message;
+
+                return true;
+            },
+            E_USER_DEPRECATED
+        );
+
+        try {
+            $dispatcher->dispatch('onContentBeforeSave', new ModelBeforeSaveEvent('onContentBeforeSave', [
+                'context' => 'com_content.article',
+                'subject' => new FakeTable(['title' => 'Cheap pills']),
+                'isNew' => true,
+                'data' => [],
+            ]));
+
+            $dispatcher->dispatch('onUserBeforeSave', new UserBeforeSaveEvent('onUserBeforeSave', [
+                'subject' => [],
+                'isNew' => true,
+                'data' => ['username' => 'spammer', 'email' => 'spam@example.com'],
+            ]));
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertSame([], $deprecations);
+    }
+
     public function testCleanContentIsNotVetoed(): void
     {
         $dispatcher = $this->dispatcherWith($this->safeScanner());
