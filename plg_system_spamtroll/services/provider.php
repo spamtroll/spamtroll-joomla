@@ -28,7 +28,15 @@ if (!class_exists(\Spamtroll\Sdk\Client::class)) {
     $spamtrollAutoload = __DIR__ . '/../vendor/autoload.php';
 
     if (is_file($spamtrollAutoload)) {
-        require_once $spamtrollAutoload;
+        try {
+            require_once $spamtrollAutoload;
+        } catch (\Throwable $spamtrollAutoloadError) {
+            // Composer's generated vendor/composer/platform_check.php throws
+            // when the host PHP is older than the packaged dependencies allow.
+            // Swallowing it costs us spam scanning; letting it escape costs the
+            // site every request.
+            error_log('Spamtroll: SDK autoload failed: ' . $spamtrollAutoloadError->getMessage());
+        }
     }
 }
 

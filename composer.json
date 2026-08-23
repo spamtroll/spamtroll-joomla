@@ -10,7 +10,7 @@
         "issues": "https://github.com/spamtroll/spamtroll-joomla/issues"
     },
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.2",
         "spamtroll/php-sdk": "^0.9"
     },
     "require-dev": {
@@ -33,7 +33,7 @@
     "config": {
         "optimize-autoloader": true,
         "platform": {
-            "php": "8.1"
+            "php": "8.2"
         },
         "sort-packages": true
     },
