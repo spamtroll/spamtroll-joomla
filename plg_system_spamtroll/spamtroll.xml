@@ -26,12 +26,12 @@
         autoloads. Without it JoomlaHttpClient cannot even be class-loaded
         (it implements an SDK interface) and the plugin takes down every
         request. build/build-package.sh populates it and refuses to produce a
-        package if it is missing. The `plugin="..."` attribute only ever
-        applied to <filename>, never to <folder>, so it is dropped.
+        package if it is missing. Joomla reads the `plugin` attribute on this files entry to identify
+        the installed plugin element; keep it on the services folder.
     -->
     <files>
         <filename>LICENSE</filename>
-        <folder>services</folder>
+        <folder plugin="spamtroll">services</folder>
         <folder>src</folder>
         <folder>sql</folder>
         <folder>vendor</folder>

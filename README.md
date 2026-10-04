@@ -8,7 +8,7 @@ Sending a contact form message is not covered merely because Joomla has a contac
 
 ## Requirements
 
-- Joomla 4.4 or Joomla 5; dispatch tests cover both event shapes. Full CMS installation testing is still required before a directory compatibility claim. Joomla 6 compatibility has not been verified.
+- Joomla 4.4 or Joomla 5. Installation, provider/SDK boot and registration dispatch verified on Joomla 4.4.13 and 5.4.9 with PHP 8.2.34; Joomla 6 compatibility has not been verified.
 - PHP 8.2 or newer
 - A Spamtroll account and **platform API key** (sign up at [spamtroll.io](https://spamtroll.io), add a platform and copy its key); the service has separate plan limits.
 

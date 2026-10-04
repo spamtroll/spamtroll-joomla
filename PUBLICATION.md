@@ -6,7 +6,8 @@ did not establish a listing and cannot establish that none exists.
 
 The extension was already implemented and audited at `e98cc0b`. Version 0.1.1
 includes those fixes and supplies the missing publication prerequisites: the
-installed GPL license and Joomla update server.
+installed GPL license and Joomla update server. Real installation testing also
+found and repaired a missing plugin identity attribute in the audited manifest.
 
 ## Package and update distribution
 
@@ -67,10 +68,12 @@ Suggested description:
 - Inspect the existing publisher dashboard first to avoid a duplicate entry.
 - Use an authorized logged-in account and obtain an explicit instruction before
   submitting this listing. No account credentials should be placed in the repository.
-- Run installation, enable/disable, update detection and uninstall checks on a
-  disposable real Joomla site; record exact CMS/PHP versions and capture actual
-  administrator screenshots. Existing dispatch tests cover Joomla 4/5 event
-  shapes, not a full CMS installation. Do not claim Joomla 6 compatibility.
+- Disposable real Joomla 4.4.13 and 5.4.9 sites on PHP 8.2.34/MariaDB 13.0.2
+  verified installation, installed identity/license/SDK, real provider boot,
+  missing-key registration dispatch, and enabled/disabled database state. The
+  CMS verifier is `build/verify-cms.php` and refuses a non-fixture configuration.
+  Joomla 5.4.9 also passed reinstall/upgrade and uninstall checks. Capture real
+  administrator screenshots for the form; do not claim Joomla 6 compatibility.
 - Confirm the service's enduring free-tier policy before choosing JED's Free
   category. A free GPL ZIP alone does not determine the SaaS listing category.
 - Review the current form, attach the installable ZIP and real screenshots, then

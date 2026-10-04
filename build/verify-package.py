@@ -8,6 +8,7 @@ import zipfile
 
 root = Path(__file__).resolve().parent.parent
 manifest = ET.parse(root / 'plg_system_spamtroll/spamtroll.xml').getroot()
+assert manifest.find('files/folder[@plugin="spamtroll"]').text == 'services'
 version = manifest.findtext('version')
 archive = root / f'dist/plg_system_spamtroll-{version}.zip'
 checksum = hashlib.sha256(archive.read_bytes()).hexdigest()

@@ -28,7 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `services/provider.php` registers the bundled SDK autoloader before anything touches `JoomlaHttpClient`. When the SDK is unavailable the plugin is built with a null scanner and its listeners no-op, instead of breaking the site.
 - Object payloads are read through `getProperties()` where available; `get_object_vars()` on a `Table` from outside the class only sees its public columns.
 - Minimum PHP raised to 8.2 (`composer.json` `require.php` and `config.platform.php`, `<php_minimum>` in the manifest). The QA matrix drops 8.1 and adds 8.4.
-- The manifest's `<folder plugin="spamtroll">services</folder>` lost its attribute — `plugin="…"` only ever applied to `<filename>`.
+- Preserve `plugin="spamtroll"` on the services folder: the real Joomla installer reads the plugin identity from this attribute. The earlier audit removed it and made the package uninstallable; an actual Joomla 5.4.9 installation exposed the error.
 
 ### Removed
 
