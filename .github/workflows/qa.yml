@@ -75,6 +75,7 @@ jobs:
           echo "checking ${zip}"
           for entry in \
             spamtroll.xml \
+            LICENSE \
             services/provider.php \
             vendor/autoload.php \
             vendor/spamtroll/php-sdk/src/Client.php \
@@ -84,8 +85,14 @@ jobs:
             echo "  ok ${entry}"
           done
 
+      - name: Verify publication metadata
+        run: python3 build/verify-package.py
+
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
           name: plg_system_spamtroll
-          path: dist/*.zip
+          path: |
+            dist/*.zip
+            dist/*.sha256
+            dist/updates.xml

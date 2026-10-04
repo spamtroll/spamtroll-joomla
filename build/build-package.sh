@@ -65,6 +65,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "${TMP}"' EXIT
 
 cp -R "${SRC}/." "${TMP}/"
+cp "${ROOT}/LICENSE" "${TMP}/LICENSE"
 
 # Install the SDK against a throwaway composer.json rooted in the staging
 # directory. Reusing the repository's own composer.json would bake the
@@ -128,6 +129,7 @@ find "${TMP}" -name 'Thumbs.db' -delete
 # the zip invocation would otherwise go unnoticed.
 for entry in \
     'spamtroll.xml' \
+    'LICENSE' \
     'services/provider.php' \
     'vendor/autoload.php' \
     'vendor/spamtroll/php-sdk/src/Client.php'
@@ -137,6 +139,8 @@ do
         exit 1
     fi
 done
+
+php "${ROOT}/build/build-update.php" "${ZIP_PATH}" "${MANIFEST}" "${DIST}"
 
 echo "built ${ZIP_PATH}"
 echo "  SDK: $(unzip -p "${ZIP_PATH}" vendor/composer/installed.json | php -r '

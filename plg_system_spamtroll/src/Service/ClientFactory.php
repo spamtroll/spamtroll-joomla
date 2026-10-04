@@ -32,7 +32,7 @@ final class ClientFactory
             $timeout,
             ClientConfig::DEFAULT_MAX_RETRIES,
             ClientConfig::DEFAULT_RETRY_BASE_DELAY_MS,
-            'spamtroll-joomla/0.1.0',
+            'spamtroll-joomla/0.1.1',
             ClientConfig::DEFAULT_SCORE_DENOMINATOR,
         );
 

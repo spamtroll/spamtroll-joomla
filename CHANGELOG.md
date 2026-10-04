@@ -5,7 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.1] - 2026-10-04
+
+### Publication
+
+- Include the extension GPL license in the installed package.
+- Configure a Joomla update server with version-specific ZIP URLs and SHA-256 verification; the build emits an XML feed and checksum sidecar.
+- Correct API key, warning-only queue, contact-form scope and personal-data descriptions.
 
 ### Fixed
 

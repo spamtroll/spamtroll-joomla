@@ -1,16 +1,16 @@
 # Spamtroll for Joomla
 
-Real-time spam detection for Joomla 4 and 5 powered by the [Spamtroll API](https://spamtroll.io).
-The plugin scans new user registrations and content (articles, contact submissions and any
-extension that fires `onContentBeforeSave`) before they are persisted, and either lets them
-through, sends them to moderation or blocks them outright based on the verdict returned by
-the API.
+Spam detection for Joomla 4.4 and 5 through the [Spamtroll API](https://spamtroll.io).
+The plugin scans new user registrations and content saves that fire Joomla's
+`onContentBeforeSave` event. A blocked decision can cancel the save; the queue
+setting displays a warning and allows saving. It does not create a moderation queue.
+Sending a contact form message is not covered merely because Joomla has a contact component.
 
 ## Requirements
 
-- Joomla 4.0 or newer (tested against Joomla 4.4 and Joomla 5.x)
+- Joomla 4.4 or Joomla 5; dispatch tests cover both event shapes. Full CMS installation testing is still required before a directory compatibility claim. Joomla 6 compatibility has not been verified.
 - PHP 8.2 or newer
-- A Spamtroll API key (sign up at [spamtroll.io](https://spamtroll.io))
+- A Spamtroll account and **platform API key** (sign up at [spamtroll.io](https://spamtroll.io), add a platform and copy its key); the service has separate plan limits.
 
 ## Installation
 
@@ -35,21 +35,24 @@ bash build/build-package.sh
 The installable package is written to `dist/plg_system_spamtroll-<version>.zip` with the
 plugin manifest at the top level so Joomla's installer accepts it directly. The script
 installs the Spamtroll PHP SDK into the archive's `vendor/` directory itself and refuses to
-emit a package without it — Joomla's autoloader only knows the plugin's own namespace, so a
-package missing the SDK cannot even class-load `JoomlaHttpClient`.
+emit a package without it. The ZIP also includes the extension GPL license.
+The build writes a SHA-256 sidecar and `dist/updates.xml` for the Joomla update server;
+attach all three assets to the same GitHub release. Run `python3 build/verify-package.py`
+to check the package and feed together. Publication status and the prepared directory
+submission are tracked in [PUBLICATION.md](PUBLICATION.md).
 
 ## Configuration
 
 | Field | Description |
 | --- | --- |
-| API key | Personal Spamtroll API key. Required. |
+| API key | Spamtroll platform API key. Required. |
 | API URL | Defaults to `https://api.spamtroll.io/api/v1`. Override only for self-hosted deployments. |
 | Timeout | HTTP timeout for the API call (seconds, default `5`). |
 | Spam threshold | Normalised score (0.0–1.0) above which content is treated as spam. Default `0.70`. |
 | Suspicious threshold | Score above which content is sent to moderation. Default `0.40`. |
 | Check user registrations | Toggle scanning of `onUserBeforeSave`, which covers every registration path. |
-| Check content | Toggle scanning of `onContentBeforeSave` (articles, contact, etc.). |
-| Action on blocked | Either `block` (reject the save) or `queue` (allow but mark as moderated). |
+| Check content | Toggle scanning of `onContentBeforeSave` (including article creation and edits). |
+| Action on blocked | Either `block` (reject the save) or `queue` (allow with a warning; no moderation queue). |
 | Log retention (days) | Older entries in `#__spamtroll_log` are pruned. `0` keeps everything. |
 
 ## Fail-open behaviour
@@ -61,7 +64,7 @@ API is unreachable**. Specifically:
 - HTTP 5xx / 4xx responses → content is allowed through.
 - Invalid JSON / unparseable responses → content is allowed through.
 - Missing / empty API key → content is allowed through (the plugin is effectively a no-op).
-- Only an explicit `blocked` status from a successful API response will cancel the save.
+- Only a successful API scan whose normalized score reaches the configured spam threshold can cancel a save, when the action is `block`.
 
 Every fail-open path is logged through Joomla's `Log` facility under the `spamtroll`
 category so you can review what the API said in `administrator/logs/`.
@@ -70,9 +73,10 @@ category so you can review what the API said in `administrator/logs/`.
 
 The plugin creates `#__spamtroll_log` on install. Each row records the timestamp, source
 (`comment`, `registration`, …), verdict status, normalised score, content hash, IP,
-e-mail, username and the list of detection symbols returned by the API. The raw content
-is never persisted, only its SHA-256 hash, so the table is safe to keep around for audit
-purposes.
+e-mail, username and the list of detection symbols returned by the API. Raw content is not stored in this table. IP addresses, e-mail addresses and usernames
+remain personal data; choose retention and access controls accordingly. Scanned content
+and available registration metadata are transmitted to the configured API. See the
+service [privacy policy](https://spamtroll.io/privacy) and [terms](https://spamtroll.io/terms).
 
 The `Log retention (days)` setting drives the cleanup performed at the end of every
 request that touches the scanner.

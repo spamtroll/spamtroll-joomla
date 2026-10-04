@@ -7,7 +7,7 @@
     <license>GPL-2.0-or-later</license>
     <authorEmail>support@spamtroll.io</authorEmail>
     <authorUrl>https://spamtroll.io</authorUrl>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
     <description>PLG_SYSTEM_SPAMTROLL_XML_DESCRIPTION</description>
     <namespace path="src">Joomla\Plugin\System\Spamtroll</namespace>
 
@@ -30,6 +30,7 @@
         applied to <filename>, never to <folder>, so it is dropped.
     -->
     <files>
+        <filename>LICENSE</filename>
         <folder>services</folder>
         <folder>src</folder>
         <folder>sql</folder>
@@ -56,6 +57,10 @@
             <schemapath type="mysql">sql/mysql-updates</schemapath>
         </schemas>
     </update>
+
+    <updateservers>
+        <server type="extension" priority="1" name="Spamtroll for Joomla">https://github.com/spamtroll/spamtroll-joomla/releases/latest/download/updates.xml</server>
+    </updateservers>
 
     <config>
         <fields name="params"
