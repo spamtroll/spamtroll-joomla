@@ -9,6 +9,16 @@ includes those fixes and supplies the missing publication prerequisites: the
 installed GPL license and Joomla update server. Real installation testing also
 found and repaired a missing plugin identity attribute in the audited manifest.
 
+Published: [v0.1.1](https://github.com/spamtroll/spamtroll-joomla/releases/tag/v0.1.1),
+source `9b8b2f5`. The public ZIP and feed were downloaded again and matched the local assets.
+ZIP SHA-256: `9c235087f9cbde7e2c38737681ce06313f414f22b7980ca05d0646f363b61d0c`.
+[CI 37220286242](https://github.com/spamtroll/spamtroll-joomla/actions/runs/37220286242)
+passed PHP 8.2/8.3/8.4 QA and the package job. Local PHPStan and all 24 tests
+(49 assertions) passed. Both real CMS versions passed reinstall, discovery of
+0.1.1 through the public update feed while simulating installed 0.1.0, and complete
+uninstall: extension row, update site, log table and plugin files removed.
+The temporary socket-only database was shut down; no HTTP server or live API key was used.
+
 ## Package and update distribution
 
 - Source: https://github.com/spamtroll/spamtroll-joomla
@@ -72,7 +82,7 @@ Suggested description:
   verified installation, installed identity/license/SDK, real provider boot,
   missing-key registration dispatch, and enabled/disabled database state. The
   CMS verifier is `build/verify-cms.php` and refuses a non-fixture configuration.
-  Joomla 5.4.9 also passed reinstall/upgrade and uninstall checks. Capture real
+  Both versions also passed reinstall, public update discovery and uninstall. Capture real
   administrator screenshots for the form; do not claim Joomla 6 compatibility.
 - Confirm the service's enduring free-tier policy before choosing JED's Free
   category. A free GPL ZIP alone does not determine the SaaS listing category.
